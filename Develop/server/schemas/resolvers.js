@@ -16,7 +16,7 @@ const resolvers = {
       const user = await User.findOne({ email, password });
 
       if (!user) {
-        return null;
+        throw new AuthenticationError("User not found.");
       }
       const token = signToken(user);
       return { token, user };
@@ -25,13 +25,33 @@ const resolvers = {
       const user = await User.create({ username, email, password });
 
       if (!user) {
-        return null;
+        throw new AuthenticationError("User already exists.");
       }
       const token = signToken(user);
       return { token, user };
     },
-    saveBook: async () => {},
-    removeBook: async () => {},
+    saveBook: async (parent, { input }, context) => {
+      if (context.user) {
+        const updatedUser = await User.findOneAndUpdate(
+          { _id: user._id },
+          { $addToSet: { savedBooks: input } },
+          { new: true, runValidators: true }
+        );
+        return updatedUser;
+      }
+      throw new AuthenticationError("You need to be logged in!");
+    },
+    removeBook: async (parent, { bookId }, context) => {
+      const updatedUser = await User.findOneAndUpdate(
+        { _id: context.user._id },
+        { $pull: { savedBooks: { bookId: bookId } } },
+        { new: true }
+      );
+      if (!updatedUser) {
+        throw new AuthenticationError("Couldn't find user with this id!");
+      }
+      return updatedUser;
+    },
   },
 };
 
