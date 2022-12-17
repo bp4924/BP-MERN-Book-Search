@@ -1,5 +1,6 @@
 const { User } = require("../models");
 const { AuthenticationError } = require("apollo-server-express");
+const { signToken } = require("../utils/auth");
 
 // Create the functions that fulfill the queries defined in `typeDefs.js`
 const resolvers = {
@@ -13,11 +14,18 @@ const resolvers = {
   },
   Mutation: {
     login: async (parent, { email, password }) => {
-      const user = await User.findOne({ email, password });
+      const user = await User.findOne({ email });
 
       if (!user) {
-        throw new AuthenticationError("User not found.");
+        throw new AuthenticationError("No user found with this email address");
       }
+
+      const correctPw = await user.isCorrectPassword(password);
+
+      if (!correctPw) {
+        throw new AuthenticationError("Incorrect credentials");
+      }
+
       const token = signToken(user);
       return { token, user };
     },
@@ -33,7 +41,7 @@ const resolvers = {
     saveBook: async (parent, { input }, context) => {
       if (context.user) {
         const updatedUser = await User.findOneAndUpdate(
-          { _id: user._id },
+          { _id: context.user._id },
           { $addToSet: { savedBooks: input } },
           { new: true, runValidators: true }
         );

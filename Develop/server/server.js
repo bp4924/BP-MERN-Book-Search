@@ -26,7 +26,7 @@ const startApolloServer = async (typeDefs, resolvers) => {
     app.use(express.static(path.join(__dirname, "../client/build")));
   }
 
-  // app.use(routes);
+  app.use(routes);
 
   db.once("open", () => {
     app.listen(PORT, () =>
