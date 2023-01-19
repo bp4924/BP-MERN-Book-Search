@@ -22,9 +22,7 @@ This app makes use of the Google Books API to search for any title you may choos
 
 ## Usage
 
-The app is deployed to Heroku, and is fully responsive.
-
-_At this time, the Heroku deployment is not functioning._
+The app is deployed to [Heroku](https://bp-frontend.herokuapp.com/), and is fully responsive.
 
 ## License
 
